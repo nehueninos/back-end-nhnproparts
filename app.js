@@ -29,7 +29,7 @@ mongoose.connect(process.env.MONGO_URI)
   .catch(err => console.error(err));
 
 app.use("/api/products", productsRoutes);
-app.use('/api/auth', authRoutes);
+app.use('/auth', authRoutes);
 app.use('/api/pedido', pedidosRouter);
 
 app.listen(3000, () => {
