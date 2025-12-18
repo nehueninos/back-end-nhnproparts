@@ -13,11 +13,13 @@ import pedidosRouter from './routes/pedidos.js';
 
 
 const app = express();
-app.use(cors(  {
+app.use(cors({
     origin: [
       'http://localhost:3000',
-      'https://nhnproparts.netlify.app/',
+      'https://nhnproparts.netlify.app',
     ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true,
   }));
 app.use(express.json());
 mongoose.set('strictQuery', true);
