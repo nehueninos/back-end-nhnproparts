@@ -16,7 +16,7 @@ const app = express();
 app.use(cors(  {
     origin: [
       'http://localhost:3000',
-      'https://tudominio.com',
+      'https://nhnproparts.netlify.app/',
     ],
   }));
 app.use(express.json());
