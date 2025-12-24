@@ -16,7 +16,7 @@ const app = express();
 app.use(cors({
     origin: [
       'http://localhost:3000',
-      'https://nhnproparts.netlify.app',
+      'https://nhnproparts.web.app',
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
