@@ -18,6 +18,7 @@ app.use(cors({
       'http://localhost:5173', // Vite
       'http://localhost:3000',
       'https://nhnproparts.web.app',
+      'https://admin-nhnproparts.web.app',
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
