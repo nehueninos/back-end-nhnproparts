@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import Product from '../models/Product.js';
-import upload from '../middlewares/upload.js';
 
 const router = Router();
 
@@ -9,10 +8,10 @@ const router = Router();
 // =======================
 router.get('/', async (req, res) => {
   try {
-    const products = await Product.find();
+    const products = await Product.find().sort({ createdAt: -1 });
     res.json(products);
-  } catch (error) {
-    console.error('ERROR GET PRODUCTS:', error);
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ message: 'Error obteniendo productos' });
   }
 });
@@ -20,23 +19,34 @@ router.get('/', async (req, res) => {
 // =======================
 // CREATE PRODUCT
 // =======================
-router.post('/', upload.single('image'), async (req, res) => {
+router.post('/', async (req, res) => {
   try {
-    const productData = {
-      ...req.body,
-    };
+    const {
+      name,
+      description,
+      category,
+      price,
+      stock,
+      image_url,
+    } = req.body;
 
-    // ✔️ solo si hay imagen
-    if (req.file) {
-      productData.image_url = req.file.path; // Cloudinary URL
+    if (!name || !price) {
+      return res.status(400).json({ message: 'Datos inválidos' });
     }
 
-    const product = new Product(productData);
-    await product.save();
+    const product = new Product({
+      name,
+      description,
+      category,
+      price,
+      stock,
+      image_url: image_url || '',
+    });
 
-    res.json(product);
-  } catch (error) {
-    console.error('ERROR CREATE PRODUCT:', error);
+    await product.save();
+    res.status(201).json(product);
+  } catch (err) {
+    console.error('CREATE PRODUCT ERROR:', err);
     res.status(500).json({ message: 'Error creando producto' });
   }
 });
@@ -44,20 +54,11 @@ router.post('/', upload.single('image'), async (req, res) => {
 // =======================
 // UPDATE PRODUCT
 // =======================
-router.put('/:id', upload.single('image'), async (req, res) => {
+router.put('/:id', async (req, res) => {
   try {
-    const updateData = {
-      ...req.body,
-    };
-
-    // ✔️ solo si hay imagen nueva
-    if (req.file) {
-      updateData.image_url = req.file.path;
-    }
-
     const product = await Product.findByIdAndUpdate(
       req.params.id,
-      updateData,
+      req.body,
       { new: true }
     );
 
@@ -66,8 +67,8 @@ router.put('/:id', upload.single('image'), async (req, res) => {
     }
 
     res.json(product);
-  } catch (error) {
-    console.error('ERROR UPDATE PRODUCT:', error);
+  } catch (err) {
+    console.error('UPDATE PRODUCT ERROR:', err);
     res.status(500).json({ message: 'Error actualizando producto' });
   }
 });
@@ -84,8 +85,8 @@ router.delete('/:id', async (req, res) => {
     }
 
     res.json({ message: 'Producto eliminado correctamente' });
-  } catch (error) {
-    console.error('ERROR DELETE PRODUCT:', error);
+  } catch (err) {
+    console.error('DELETE PRODUCT ERROR:', err);
     res.status(500).json({ message: 'Error eliminando producto' });
   }
 });
