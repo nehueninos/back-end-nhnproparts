@@ -20,9 +20,20 @@ app.use(cors({
       'https://nhnproparts.web.app',
       'https://admin-nhnproparts.web.app',
     ],
+    origin: function (origin, callback) {
+    // permite requests sin origin (Postman, curl)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
   }));
+  app.options('*', cors());
   app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
