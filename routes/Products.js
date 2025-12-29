@@ -11,8 +11,8 @@ router.get('/', async (req, res) => {
   try {
     const products = await Product.find();
     res.json(products);
-  } catch (err) {
-    console.error(err);
+  } catch (error) {
+    console.error('ERROR GET PRODUCTS:', error);
     res.status(500).json({ message: 'Error obteniendo productos' });
   }
 });
@@ -22,15 +22,21 @@ router.get('/', async (req, res) => {
 // =======================
 router.post('/', upload.single('image'), async (req, res) => {
   try {
-    const product = new Product({
+    const productData = {
       ...req.body,
-      image_url: req.file?.path || '', // 🔥 seguro
-    });
+    };
 
+    // ✔️ solo si hay imagen
+    if (req.file) {
+      productData.image_url = req.file.path; // Cloudinary URL
+    }
+
+    const product = new Product(productData);
     await product.save();
+
     res.json(product);
-  } catch (err) {
-    console.error(err);
+  } catch (error) {
+    console.error('ERROR CREATE PRODUCT:', error);
     res.status(500).json({ message: 'Error creando producto' });
   }
 });
@@ -40,8 +46,11 @@ router.post('/', upload.single('image'), async (req, res) => {
 // =======================
 router.put('/:id', upload.single('image'), async (req, res) => {
   try {
-    const updateData = { ...req.body };
+    const updateData = {
+      ...req.body,
+    };
 
+    // ✔️ solo si hay imagen nueva
     if (req.file) {
       updateData.image_url = req.file.path;
     }
@@ -57,8 +66,8 @@ router.put('/:id', upload.single('image'), async (req, res) => {
     }
 
     res.json(product);
-  } catch (err) {
-    console.error(err);
+  } catch (error) {
+    console.error('ERROR UPDATE PRODUCT:', error);
     res.status(500).json({ message: 'Error actualizando producto' });
   }
 });
@@ -75,8 +84,8 @@ router.delete('/:id', async (req, res) => {
     }
 
     res.json({ message: 'Producto eliminado correctamente' });
-  } catch (err) {
-    console.error(err);
+  } catch (error) {
+    console.error('ERROR DELETE PRODUCT:', error);
     res.status(500).json({ message: 'Error eliminando producto' });
   }
 });
