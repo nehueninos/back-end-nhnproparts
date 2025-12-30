@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import Product from '../models/Product.js';
+import cloudinary from '../config/cloudinary.js';
 
 const router = Router();
 
@@ -19,47 +20,72 @@ router.get('/', async (req, res) => {
 // =======================
 // CREATE PRODUCT
 // =======================
-router.post('/', async (req, res) => {
+router.post('/', upload.single('image'), async (req, res) => {
   try {
-    const {
-      name,
-      description,
-      category,
-      price,
-      stock,
-      image_url,
-    } = req.body;
+    const { name, description, category, price, stock } = req.body;
 
-    if (!name || !price) {
+    if (!name || !price || !stock) {
       return res.status(400).json({ message: 'Datos inválidos' });
+    }
+
+    let image_url = '';
+
+    // 🔥 SUBIDA REAL A CLOUDINARY
+    if (req.file) {
+      const uploadFromBuffer = () =>
+        new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { folder: 'products' },
+            (error, result) => {
+              if (result) resolve(result.secure_url);
+              else reject(error);
+            }
+          );
+
+          streamifier.createReadStream(req.file.buffer).pipe(stream);
+        });
+
+      image_url = await uploadFromBuffer();
     }
 
     const product = new Product({
       name,
       description,
       category,
-      price,
-      stock,
-      image_url: image_url || '',
+      price: Number(price),
+      stock: Number(stock),
+      image_url,
     });
 
     await product.save();
-    res.status(201).json(product);
+    res.json(product);
+
   } catch (err) {
-    console.error('CREATE PRODUCT ERROR:', err);
+    console.error('❌ CREATE PRODUCT ERROR:', err);
     res.status(500).json({ message: 'Error creando producto' });
   }
 });
 
+
 // =======================
 // UPDATE PRODUCT
 // =======================
-router.put('/:id', async (req, res) => {
+router.put('/:id', upload.single('image'), async (req, res) => {
   try {
+    const updateData = {
+      ...req.body,
+      price: req.body.price ? Number(req.body.price) : undefined,
+      stock: req.body.stock ? Number(req.body.stock) : undefined,
+    };
+
+    if (req.file) {
+      updateData.image_url = req.file.path;
+    }
+
     const product = await Product.findByIdAndUpdate(
       req.params.id,
-      req.body,
-      { new: true }
+      updateData,
+      { new: true, runValidators: true }
     );
 
     if (!product) {
@@ -68,10 +94,11 @@ router.put('/:id', async (req, res) => {
 
     res.json(product);
   } catch (err) {
-    console.error('UPDATE PRODUCT ERROR:', err);
+    console.error('❌ UPDATE PRODUCT ERROR:', err);
     res.status(500).json({ message: 'Error actualizando producto' });
   }
 });
+
 
 // =======================
 // DELETE PRODUCT
