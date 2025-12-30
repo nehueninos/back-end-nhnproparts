@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import Product from '../models/Product.js';
 import upload from '../middlewares/upload.js';
-import cloudinary from '../utils/cloudinary.js';
+import cloudinary from '../config/cloudinary.js';
 import streamifier from 'streamifier';
 
 const router = Router();
