@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import Product from '../models/Product.js';
 import cloudinary from '../config/cloudinary.js';
+import upload from '../middlewares/upload.js';
 
 const router = Router();
 
