@@ -2,7 +2,6 @@ import { Router } from 'express';
 import Product from '../models/Product.js';
 import upload from '../middlewares/upload.js';
 import cloudinary from '../config/cloudinary.js';
-import streamifier from 'streamifier';
 
 const router = Router();
 
@@ -32,22 +31,13 @@ router.post('/', upload.single('image'), async (req, res) => {
 
     let image_url = '';
 
-    // ✅ SUBIR A CLOUDINARY DESDE MEMORIA
     if (req.file) {
-      const uploadFromBuffer = () =>
-        new Promise((resolve, reject) => {
-          const stream = cloudinary.uploader.upload_stream(
-            { folder: 'products' },
-            (error, result) => {
-              if (error) reject(error);
-              else resolve(result);
-            }
-          );
+      const base64 = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
 
-          streamifier.createReadStream(req.file.buffer).pipe(stream);
-        });
+      const result = await cloudinary.uploader.upload(base64, {
+        folder: 'products',
+      });
 
-      const result = await uploadFromBuffer();
       image_url = result.secure_url;
     }
 
@@ -61,10 +51,9 @@ router.post('/', upload.single('image'), async (req, res) => {
     });
 
     await product.save();
-
     res.json(product);
   } catch (err) {
-    console.error('🔥 ERROR CREATE PRODUCT:', err);
+    console.error('🔥 CREATE PRODUCT ERROR:', err);
     res.status(500).json({ message: 'Error creando producto' });
   }
 });
@@ -77,20 +66,12 @@ router.put('/:id', upload.single('image'), async (req, res) => {
     const updateData = { ...req.body };
 
     if (req.file) {
-      const uploadFromBuffer = () =>
-        new Promise((resolve, reject) => {
-          const stream = cloudinary.uploader.upload_stream(
-            { folder: 'products' },
-            (error, result) => {
-              if (error) reject(error);
-              else resolve(result);
-            }
-          );
+      const base64 = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
 
-          streamifier.createReadStream(req.file.buffer).pipe(stream);
-        });
+      const result = await cloudinary.uploader.upload(base64, {
+        folder: 'products',
+      });
 
-      const result = await uploadFromBuffer();
       updateData.image_url = result.secure_url;
     }
 
@@ -106,7 +87,7 @@ router.put('/:id', upload.single('image'), async (req, res) => {
 
     res.json(product);
   } catch (err) {
-    console.error('🔥 ERROR UPDATE PRODUCT:', err);
+    console.error('🔥 UPDATE PRODUCT ERROR:', err);
     res.status(500).json({ message: 'Error actualizando producto' });
   }
 });
