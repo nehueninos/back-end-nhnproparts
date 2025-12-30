@@ -43,13 +43,7 @@ app.options('*', cors());
 // =======================
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use((err, req, res, next) => {
-  console.error('🔥 MULTER / UPLOAD ERROR:', err);
-  res.status(400).json({
-    message: 'Upload error',
-    error: err.message,
-  });
-});
+
 
 
 // =======================
@@ -68,6 +62,13 @@ app.use('/api/products', productsRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/pedido', pedidosRouter);
 
+app.use((err, req, res, next) => {
+  console.error('🔥 MULTER / UPLOAD ERROR:', err);
+  res.status(400).json({
+    message: 'Upload error',
+    error: err.message,
+  });
+});
 // =======================
 // SERVER
 // =======================
